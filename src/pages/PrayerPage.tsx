@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import { MapPin, ChevronLeft, ChevronRight, Sun, Sunrise, Moon, Sunset } from "lucide-react";
+import { MapPin, ChevronLeft, ChevronRight, Sun, Sunrise, Moon, Sunset, Loader2, MapPinOff } from "lucide-react";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { usePrayerTimes } from "@/hooks/usePrayerTimes";
 
 const prayers = [
   { name: "Fajr", icon: Sunrise },
@@ -26,24 +28,31 @@ const generateDays = () => {
   return days;
 };
 
-const prayerTimes: Record<number, Record<string, string>> = {
-  0: { Fajr: "05:42", Dhuhr: "12:35", Asr: "15:18", Maghrib: "17:52", Isha: "19:22" },
-  1: { Fajr: "05:41", Dhuhr: "12:35", Asr: "15:19", Maghrib: "17:53", Isha: "19:23" },
-  2: { Fajr: "05:40", Dhuhr: "12:36", Asr: "15:20", Maghrib: "17:54", Isha: "19:24" },
-  3: { Fajr: "05:39", Dhuhr: "12:36", Asr: "15:21", Maghrib: "17:55", Isha: "19:25" },
-};
-
 const PrayerPage = () => {
   const [selectedDayIndex, setSelectedDayIndex] = useState(3);
-  const [city, setCity] = useState("Paris, France");
   const days = generateDays();
+  
+  const { location, loading: locationLoading, error: locationError, permissionDenied, requestLocation } = useGeolocation();
+  
+  const selectedDate = days[selectedDayIndex]?.fullDate || new Date();
+  const { times, loading: timesLoading, error: timesError } = usePrayerTimes(
+    location?.latitude || null,
+    location?.longitude || null,
+    selectedDate
+  );
 
-  const getTimes = () => {
-    const dayOffset = selectedDayIndex - 3;
-    return prayerTimes[Math.abs(dayOffset) % 4] || prayerTimes[0];
-  };
+  // Request location on first load if not already saved
+  useEffect(() => {
+    if (!location && !locationLoading && !permissionDenied) {
+      requestLocation();
+    }
+  }, []);
 
-  const times = getTimes();
+  const cityDisplay = location 
+    ? `${location.city}${location.country ? `, ${location.country}` : ""}`
+    : "Localisation...";
+
+  const isLoading = locationLoading || timesLoading;
 
   return (
     <AppLayout>
@@ -51,10 +60,29 @@ const PrayerPage = () => {
         {/* Header */}
         <header className="mb-6">
           <h1 className="text-2xl font-bold text-foreground mb-2">Horaires de Prière</h1>
-          <button className="flex items-center gap-2 text-primary bg-primary/10 px-4 py-2 rounded-xl">
-            <MapPin className="w-4 h-4" />
-            <span className="text-sm font-medium">{city}</span>
+          <button 
+            onClick={requestLocation}
+            className="flex items-center gap-2 text-primary bg-primary/10 px-4 py-2 rounded-xl transition-all active:scale-95"
+          >
+            {locationLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : permissionDenied ? (
+              <MapPinOff className="w-4 h-4" />
+            ) : (
+              <MapPin className="w-4 h-4" />
+            )}
+            <span className="text-sm font-medium">
+              {locationLoading ? "Recherche..." : cityDisplay}
+            </span>
           </button>
+          {locationError && !permissionDenied && (
+            <p className="text-xs text-destructive mt-2">{locationError}</p>
+          )}
+          {permissionDenied && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Appuyez pour autoriser la localisation
+            </p>
+          )}
         </header>
 
         {/* Day Selector */}
@@ -106,7 +134,35 @@ const PrayerPage = () => {
 
         {/* Prayer Times */}
         <div className="space-y-3">
-          {prayers.map((prayer, index) => (
+          {!location && !locationLoading && (
+            <div className="text-center py-8">
+              <MapPinOff className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-4">
+                Autorisez la localisation pour afficher les horaires de prière de votre ville
+              </p>
+              <button
+                onClick={requestLocation}
+                className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-medium"
+              >
+                Autoriser la localisation
+              </button>
+            </div>
+          )}
+          
+          {isLoading && location && (
+            <div className="text-center py-8">
+              <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin mb-4" />
+              <p className="text-muted-foreground">Chargement des horaires...</p>
+            </div>
+          )}
+
+          {timesError && (
+            <div className="text-center py-8">
+              <p className="text-destructive">{timesError}</p>
+            </div>
+          )}
+
+          {times && !isLoading && prayers.map((prayer, index) => (
             <div
               key={prayer.name}
               className="flex items-center justify-between p-4 bg-card rounded-xl border border-border animate-fade-in"
@@ -127,7 +183,7 @@ const PrayerPage = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-xl font-bold text-primary">{times[prayer.name]}</p>
+              <p className="text-xl font-bold text-primary">{times[prayer.name as keyof typeof times]}</p>
             </div>
           ))}
         </div>
