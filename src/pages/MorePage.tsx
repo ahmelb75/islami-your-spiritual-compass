@@ -5,78 +5,40 @@ import {
   Compass, 
   Calendar, 
   Target, 
-  Heart,
   Moon,
   Star,
+  Bell,
   ChevronRight
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
-  {
-    icon: Sparkles,
-    name: "Dhikr",
-    description: "Rappels et méditations",
-    color: "from-primary/20 to-primary/5",
-  },
-  {
-    icon: BookOpen,
-    name: "Tafsir",
-    description: "Exégèse du Coran",
-    color: "from-islamic-emerald/20 to-islamic-emerald/5",
-  },
-  {
-    icon: Compass,
-    name: "Qibla",
-    description: "Trouver la direction",
-    color: "from-primary/20 to-primary/5",
-  },
-  {
-    icon: Calendar,
-    name: "Calendrier Islamique",
-    description: "Hijri & événements",
-    color: "from-islamic-emerald/20 to-islamic-emerald/5",
-  },
-  {
-    icon: Target,
-    name: "Compteur Tasbih",
-    description: "Comptez vos dhikr",
-    color: "from-primary/20 to-primary/5",
-  },
-  {
-    icon: Star,
-    name: "99 Noms d'Allah",
-    description: "Asma ul Husna",
-    color: "from-islamic-emerald/20 to-islamic-emerald/5",
-  },
-  {
-    icon: Moon,
-    name: "Nuits Spéciales",
-    description: "Laylat al-Qadr & plus",
-    color: "from-primary/20 to-primary/5",
-  },
-  {
-    icon: Heart,
-    name: "Favoris",
-    description: "Vos sauvegardes",
-    color: "from-islamic-emerald/20 to-islamic-emerald/5",
-  },
+  { icon: Sparkles, name: "Dhikr", description: "Rappels et méditations", color: "from-primary/20 to-primary/5", route: "/dhikr" },
+  { icon: BookOpen, name: "Tafsir", description: "Exégèse du Coran", color: "from-islamic-emerald/20 to-islamic-emerald/5", route: "/tafsir" },
+  { icon: Compass, name: "Qibla", description: "Trouver la direction", color: "from-primary/20 to-primary/5", route: "/qibla" },
+  { icon: Calendar, name: "Calendrier Islamique", description: "Hijri & événements", color: "from-islamic-emerald/20 to-islamic-emerald/5", route: "/islamic-calendar" },
+  { icon: Target, name: "Compteur Tasbih", description: "Comptez vos dhikr", color: "from-primary/20 to-primary/5", route: "/tasbih" },
+  { icon: Star, name: "99 Noms d'Allah", description: "Asma ul Husna", color: "from-islamic-emerald/20 to-islamic-emerald/5", route: "/names-of-allah" },
+  { icon: Moon, name: "Nuits Spéciales", description: "Laylat al-Qadr & plus", color: "from-primary/20 to-primary/5", route: "/special-nights" },
+  { icon: Bell, name: "Notifications", description: "Rappels de prières", color: "from-islamic-emerald/20 to-islamic-emerald/5", route: "/notifications" },
 ];
 
 const MorePage = () => {
+  const navigate = useNavigate();
+
   return (
     <AppLayout>
       <div className="px-4 py-6">
-        {/* Header */}
         <header className="mb-6">
           <h1 className="text-2xl font-bold text-foreground">Plus de Fonctionnalités</h1>
           <p className="text-muted-foreground text-sm">Découvrez toutes les ressources</p>
         </header>
 
-        {/* Features Grid */}
         <div className="space-y-3">
           {features.map((feature, index) => (
             <button
               key={feature.name}
+              onClick={() => navigate(feature.route)}
               className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 animate-fade-in"
               style={{ animationDelay: `${index * 50}ms` }}
             >

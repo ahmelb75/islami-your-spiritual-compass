@@ -10,6 +10,14 @@ import PrayerPage from "./pages/PrayerPage";
 import QuranPage from "./pages/QuranPage";
 import DuasPage from "./pages/DuasPage";
 import MorePage from "./pages/MorePage";
+import DhikrPage from "./pages/DhikrPage";
+import TafsirPage from "./pages/TafsirPage";
+import QiblaPage from "./pages/QiblaPage";
+import IslamicCalendarPage from "./pages/IslamicCalendarPage";
+import TasbihPage from "./pages/TasbihPage";
+import NamesOfAllahPage from "./pages/NamesOfAllahPage";
+import SpecialNightsPage from "./pages/SpecialNightsPage";
+import NotificationsSettingsPage from "./pages/NotificationsSettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +36,14 @@ const App = () => (
           <Route path="/quran" element={<QuranPage />} />
           <Route path="/duas" element={<DuasPage />} />
           <Route path="/more" element={<MorePage />} />
+          <Route path="/dhikr" element={<DhikrPage />} />
+          <Route path="/tafsir" element={<TafsirPage />} />
+          <Route path="/qibla" element={<QiblaPage />} />
+          <Route path="/islamic-calendar" element={<IslamicCalendarPage />} />
+          <Route path="/tasbih" element={<TasbihPage />} />
+          <Route path="/names-of-allah" element={<NamesOfAllahPage />} />
+          <Route path="/special-nights" element={<SpecialNightsPage />} />
+          <Route path="/notifications" element={<NotificationsSettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
