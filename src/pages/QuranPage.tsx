@@ -28,8 +28,11 @@ const QuranPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Find Ya-Sin surah by number
+  const yasinSurah = surahs.find(s => s.number === 36) || surahs[0];
+  
   const lastListened = {
-    surah: surahs[35], // Ya-Sin
+    surah: yasinSurah,
     verse: 15,
     totalVerses: 83,
     progress: (15 / 83) * 100,
