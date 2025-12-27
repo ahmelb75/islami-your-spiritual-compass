@@ -1,0 +1,139 @@
+import { useState } from "react";
+import AppLayout from "@/components/layout/AppLayout";
+import { MapPin, ChevronLeft, ChevronRight, Sun, Sunrise, Moon, Sunset } from "lucide-react";
+
+const prayers = [
+  { name: "Fajr", icon: Sunrise },
+  { name: "Dhuhr", icon: Sun },
+  { name: "Asr", icon: Sun },
+  { name: "Maghrib", icon: Sunset },
+  { name: "Isha", icon: Moon },
+];
+
+const generateDays = () => {
+  const days = [];
+  const today = new Date();
+  for (let i = -3; i <= 7; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    days.push({
+      day: date.toLocaleDateString("fr-FR", { weekday: "short" }),
+      date: date.getDate(),
+      fullDate: date,
+      isToday: i === 0,
+    });
+  }
+  return days;
+};
+
+const prayerTimes: Record<number, Record<string, string>> = {
+  0: { Fajr: "05:42", Dhuhr: "12:35", Asr: "15:18", Maghrib: "17:52", Isha: "19:22" },
+  1: { Fajr: "05:41", Dhuhr: "12:35", Asr: "15:19", Maghrib: "17:53", Isha: "19:23" },
+  2: { Fajr: "05:40", Dhuhr: "12:36", Asr: "15:20", Maghrib: "17:54", Isha: "19:24" },
+  3: { Fajr: "05:39", Dhuhr: "12:36", Asr: "15:21", Maghrib: "17:55", Isha: "19:25" },
+};
+
+const PrayerPage = () => {
+  const [selectedDayIndex, setSelectedDayIndex] = useState(3);
+  const [city, setCity] = useState("Paris, France");
+  const days = generateDays();
+
+  const getTimes = () => {
+    const dayOffset = selectedDayIndex - 3;
+    return prayerTimes[Math.abs(dayOffset) % 4] || prayerTimes[0];
+  };
+
+  const times = getTimes();
+
+  return (
+    <AppLayout>
+      <div className="px-4 py-6">
+        {/* Header */}
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Horaires de Prière</h1>
+          <button className="flex items-center gap-2 text-primary bg-primary/10 px-4 py-2 rounded-xl">
+            <MapPin className="w-4 h-4" />
+            <span className="text-sm font-medium">{city}</span>
+          </button>
+        </header>
+
+        {/* Day Selector */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setSelectedDayIndex(Math.max(0, selectedDayIndex - 1))}
+              className="p-2 rounded-lg bg-secondary text-foreground"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <p className="text-foreground font-medium">
+              {days[selectedDayIndex]?.isToday
+                ? "Aujourd'hui"
+                : days[selectedDayIndex]?.fullDate.toLocaleDateString("fr-FR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
+            </p>
+            <button
+              onClick={() => setSelectedDayIndex(Math.min(days.length - 1, selectedDayIndex + 1))}
+              className="p-2 rounded-lg bg-secondary text-foreground"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Horizontal Day List */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {days.map((day, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedDayIndex(index)}
+                className={`flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl transition-all duration-300 ${
+                  index === selectedDayIndex
+                    ? "bg-primary text-primary-foreground"
+                    : day.isToday
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "bg-card border border-border text-foreground"
+                }`}
+              >
+                <span className="text-xs uppercase">{day.day}</span>
+                <span className="text-lg font-bold">{day.date}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Prayer Times */}
+        <div className="space-y-3">
+          {prayers.map((prayer, index) => (
+            <div
+              key={prayer.name}
+              className="flex items-center justify-between p-4 bg-card rounded-xl border border-border animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center">
+                  <prayer.icon className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{prayer.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {prayer.name === "Fajr" && "Prière de l'aube"}
+                    {prayer.name === "Dhuhr" && "Prière du midi"}
+                    {prayer.name === "Asr" && "Prière de l'après-midi"}
+                    {prayer.name === "Maghrib" && "Prière du coucher"}
+                    {prayer.name === "Isha" && "Prière de la nuit"}
+                  </p>
+                </div>
+              </div>
+              <p className="text-xl font-bold text-primary">{times[prayer.name]}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default PrayerPage;
