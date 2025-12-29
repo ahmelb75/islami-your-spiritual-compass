@@ -8,6 +8,7 @@ import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import PrayerPage from "./pages/PrayerPage";
 import QuranPage from "./pages/QuranPage";
+import SurahDetailPage from "./pages/SurahDetailPage";
 import DuasPage from "./pages/DuasPage";
 import MorePage from "./pages/MorePage";
 import DhikrPage from "./pages/DhikrPage";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/home" element={<HomePage />} />
           <Route path="/prayer" element={<PrayerPage />} />
           <Route path="/quran" element={<QuranPage />} />
+          <Route path="/quran/:surahNumber" element={<SurahDetailPage />} />
           <Route path="/duas" element={<DuasPage />} />
           <Route path="/more" element={<MorePage />} />
           <Route path="/dhikr" element={<DhikrPage />} />
