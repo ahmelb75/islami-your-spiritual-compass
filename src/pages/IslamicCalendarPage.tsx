@@ -1,5 +1,5 @@
 import AppLayout from "@/components/layout/AppLayout";
-import { ArrowLeft, Calendar, Star } from "lucide-react";
+import { ArrowLeft, Calendar, Star, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -10,15 +10,17 @@ const islamicMonths = [
 ];
 
 const islamicEvents = [
-  { name: "Nouvel An Islamique", month: 1, day: 1, description: "1er Muharram" },
-  { name: "Achoura", month: 1, day: 10, description: "Jour de jeûne recommandé" },
-  { name: "Mawlid an-Nabi", month: 3, day: 12, description: "Naissance du Prophète ﷺ" },
-  { name: "Isra et Mi'raj", month: 7, day: 27, description: "Voyage nocturne" },
-  { name: "Début du Ramadan", month: 9, day: 1, description: "Mois de jeûne" },
-  { name: "Laylat al-Qadr", month: 9, day: 27, description: "Nuit du Destin" },
+  { name: "Nouvel An Islamique", month: 1, day: 1, description: "1er Muharram - Début de l'année hégirienne" },
+  { name: "Achoura", month: 1, day: 10, description: "Jour de jeûne recommandé (9 et 10 Muharram)" },
+  { name: "Mawlid an-Nabi", month: 3, day: 12, description: "Naissance du Prophète Muhammad ﷺ" },
+  { name: "Isra et Mi'raj", month: 7, day: 27, description: "Voyage nocturne et ascension céleste" },
+  { name: "Nuit du 15 Sha'ban", month: 8, day: 15, description: "Laylat al-Bara'ah - Nuit du pardon" },
+  { name: "Début du Ramadan", month: 9, day: 1, description: "Premier jour du mois de jeûne" },
+  { name: "Laylat al-Qadr", month: 9, day: 27, description: "Nuit du Destin (recherchée les nuits impaires)" },
   { name: "Aïd al-Fitr", month: 10, day: 1, description: "Fête de la rupture du jeûne" },
-  { name: "Jour d'Arafat", month: 12, day: 9, description: "Jour de jeûne recommandé" },
-  { name: "Aïd al-Adha", month: 12, day: 10, description: "Fête du sacrifice" },
+  { name: "Jour d'Arafat", month: 12, day: 9, description: "Jour de jeûne recommandé - Veille de l'Aïd" },
+  { name: "Aïd al-Adha", month: 12, day: 10, description: "Fête du sacrifice (10-13 Dhul Hijjah)" },
+  { name: "Jours de Tachrik", month: 12, day: 11, description: "11, 12, 13 Dhul Hijjah - Jours de fête" },
 ];
 
 interface HijriDate {
@@ -37,15 +39,18 @@ const IslamicCalendarPage = () => {
     const fetchHijriDate = async () => {
       try {
         const today = new Date();
-        const dateStr = `${today.getDate().toString().padStart(2, '0')}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getFullYear()}`;
-        const response = await fetch(`https://api.aladhan.com/v1/gpiToH/${dateStr}`);
+        const day = today.getDate().toString().padStart(2, '0');
+        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+        const year = today.getFullYear();
+        
+        const response = await fetch(`https://api.aladhan.com/v1/gToH/${day}-${month}-${year}`);
         const data = await response.json();
         
-        if (data.data) {
+        if (data.code === 200 && data.data?.hijri) {
           setHijriDate({
-            day: data.data.hijri.day,
+            day: parseInt(data.data.hijri.day),
             month: parseInt(data.data.hijri.month.number),
-            year: data.data.hijri.year,
+            year: parseInt(data.data.hijri.year),
             monthName: data.data.hijri.month.en
           });
         }
@@ -72,7 +77,6 @@ const IslamicCalendarPage = () => {
           </div>
         </header>
 
-        {/* Current Hijri Date */}
         <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 rounded-2xl p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
             <Calendar className="w-6 h-6 text-primary" />
@@ -80,7 +84,7 @@ const IslamicCalendarPage = () => {
           </div>
           {loading ? (
             <div className="h-16 flex items-center justify-center">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <Loader2 className="w-6 h-6 text-primary animate-spin" />
             </div>
           ) : hijriDate ? (
             <div className="text-center">
@@ -94,7 +98,6 @@ const IslamicCalendarPage = () => {
           )}
         </div>
 
-        {/* Islamic Months */}
         <h2 className="text-lg font-semibold text-foreground mb-3">Mois Islamiques</h2>
         <div className="grid grid-cols-3 gap-2 mb-6">
           {islamicMonths.map((month, index) => (
@@ -112,14 +115,10 @@ const IslamicCalendarPage = () => {
           ))}
         </div>
 
-        {/* Upcoming Events */}
         <h2 className="text-lg font-semibold text-foreground mb-3">Événements Importants</h2>
         <div className="space-y-3">
           {islamicEvents.map((event, index) => (
-            <div
-              key={index}
-              className="bg-card border border-border rounded-xl p-4 flex items-center gap-4"
-            >
+            <div key={index} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                 <Star className="w-6 h-6 text-primary" />
               </div>

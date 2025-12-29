@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import { MapPin, ChevronLeft, ChevronRight, Sun, Sunrise, Moon, Sunset, Loader2, MapPinOff } from "lucide-react";
+import { MapPin, ChevronLeft, ChevronRight, Sun, Sunrise, Moon, Sunset, Loader2, MapPinOff, ChevronDown } from "lucide-react";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { usePrayerTimes } from "@/hooks/usePrayerTimes";
+import CitySelector from "@/components/CitySelector";
 
 const prayers = [
   { name: "Fajr", icon: Sunrise },
@@ -30,9 +31,19 @@ const generateDays = () => {
 
 const PrayerPage = () => {
   const [selectedDayIndex, setSelectedDayIndex] = useState(3);
+  const [showCitySelector, setShowCitySelector] = useState(false);
+  const [manualLocation, setManualLocation] = useState<{
+    city: string;
+    country: string;
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const days = generateDays();
   
-  const { location, loading: locationLoading, error: locationError, permissionDenied, requestLocation } = useGeolocation();
+  const { location: geoLocation, loading: locationLoading, error: locationError, permissionDenied, requestLocation } = useGeolocation();
+  
+  // Use manual location if set, otherwise use geolocation
+  const location = manualLocation || geoLocation;
   
   const selectedDate = days[selectedDayIndex]?.fullDate || new Date();
   const { times, loading: timesLoading, error: timesError } = usePrayerTimes(
@@ -41,16 +52,46 @@ const PrayerPage = () => {
     selectedDate
   );
 
-  // Request location on first load if not already saved
+  // Load manual location from localStorage
   useEffect(() => {
-    if (!location && !locationLoading && !permissionDenied) {
+    const savedManualLocation = localStorage.getItem("manual_location");
+    if (savedManualLocation) {
+      try {
+        setManualLocation(JSON.parse(savedManualLocation));
+      } catch (e) {
+        console.error("Error loading manual location:", e);
+      }
+    }
+  }, []);
+
+  // Request location on first load if not already saved and no manual location
+  useEffect(() => {
+    if (!location && !locationLoading && !permissionDenied && !manualLocation) {
       requestLocation();
     }
   }, []);
 
+  const handleSelectCity = (city: { name: string; country: string; latitude: number; longitude: number }) => {
+    const newLocation = {
+      city: city.name,
+      country: city.country,
+      latitude: city.latitude,
+      longitude: city.longitude,
+    };
+    setManualLocation(newLocation);
+    localStorage.setItem("manual_location", JSON.stringify(newLocation));
+  };
+
+  const handleRequestLocation = () => {
+    // Clear manual location when requesting geolocation
+    setManualLocation(null);
+    localStorage.removeItem("manual_location");
+    requestLocation();
+  };
+
   const cityDisplay = location 
     ? `${location.city}${location.country ? `, ${location.country}` : ""}`
-    : "Localisation...";
+    : "Sélectionner une ville";
 
   const isLoading = locationLoading || timesLoading;
 
@@ -60,28 +101,37 @@ const PrayerPage = () => {
         {/* Header */}
         <header className="mb-6">
           <h1 className="text-2xl font-bold text-foreground mb-2">Horaires de Prière</h1>
-          <button 
-            onClick={requestLocation}
-            className="flex items-center gap-2 text-primary bg-primary/10 px-4 py-2 rounded-xl transition-all active:scale-95"
-          >
-            {locationLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : permissionDenied ? (
-              <MapPinOff className="w-4 h-4" />
-            ) : (
-              <MapPin className="w-4 h-4" />
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowCitySelector(true)}
+              className="flex-1 flex items-center justify-between gap-2 text-primary bg-primary/10 px-4 py-2 rounded-xl transition-all active:scale-95"
+            >
+              <div className="flex items-center gap-2">
+                {locationLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : !location ? (
+                  <MapPinOff className="w-4 h-4" />
+                ) : (
+                  <MapPin className="w-4 h-4" />
+                )}
+                <span className="text-sm font-medium">
+                  {locationLoading ? "Recherche..." : cityDisplay}
+                </span>
+              </div>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            {!manualLocation && (
+              <button
+                onClick={handleRequestLocation}
+                className="p-2 bg-secondary rounded-xl text-foreground hover:bg-secondary/80 transition-colors"
+                title="Utiliser ma position"
+              >
+                <MapPin className="w-5 h-5" />
+              </button>
             )}
-            <span className="text-sm font-medium">
-              {locationLoading ? "Recherche..." : cityDisplay}
-            </span>
-          </button>
-          {locationError && !permissionDenied && (
+          </div>
+          {locationError && !permissionDenied && !manualLocation && (
             <p className="text-xs text-destructive mt-2">{locationError}</p>
-          )}
-          {permissionDenied && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Appuyez pour autoriser la localisation
-            </p>
           )}
         </header>
 
@@ -138,14 +188,22 @@ const PrayerPage = () => {
             <div className="text-center py-8">
               <MapPinOff className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground mb-4">
-                Autorisez la localisation pour afficher les horaires de prière de votre ville
+                Sélectionnez une ville ou autorisez la localisation
               </p>
-              <button
-                onClick={requestLocation}
-                className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-medium"
-              >
-                Autoriser la localisation
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setShowCitySelector(true)}
+                  className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-medium"
+                >
+                  Choisir une ville
+                </button>
+                <button
+                  onClick={handleRequestLocation}
+                  className="bg-secondary text-foreground px-6 py-3 rounded-xl font-medium"
+                >
+                  Utiliser ma position
+                </button>
+              </div>
             </div>
           )}
           
@@ -188,6 +246,12 @@ const PrayerPage = () => {
           ))}
         </div>
       </div>
+
+      <CitySelector
+        open={showCitySelector}
+        onClose={() => setShowCitySelector(false)}
+        onSelectCity={handleSelectCity}
+      />
     </AppLayout>
   );
 };
