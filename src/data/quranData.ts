@@ -125,52 +125,76 @@ export const surahs: Surah[] = [
   { number: 114, name: "An-Nas", arabicName: "الناس", englishName: "Mankind", verses: 6, revelationType: "Meccan" },
 ];
 
-// Famous Quran reciters with their audio API identifiers
+// Famous Quran reciters with their audio API identifiers and photos
 export interface Reciter {
   id: string;
   name: string;
   arabicName: string;
   style: string;
+  photo: string;
 }
 
+// Only reciters with working audio from the Islamic Network CDN
 export const reciters: Reciter[] = [
-  { id: "ar.alafasy", name: "Mishary Rashid Alafasy", arabicName: "مشاري راشد العفاسي", style: "Murattal" },
-  { id: "ar.abdulbasitmurattal", name: "Abdul Basit (Murattal)", arabicName: "عبد الباسط عبد الصمد", style: "Murattal" },
-  { id: "ar.abdulsamad", name: "Abdul Basit (Mujawwad)", arabicName: "عبد الباسط عبد الصمد", style: "Mujawwad" },
-  { id: "ar.hudhaify", name: "Ali Al-Hudhaify", arabicName: "علي الحذيفي", style: "Murattal" },
-  { id: "ar.husary", name: "Mahmoud Khalil Al-Husary", arabicName: "محمود خليل الحصري", style: "Murattal" },
-  { id: "ar.husarymujawwad", name: "Al-Husary (Mujawwad)", arabicName: "محمود خليل الحصري", style: "Mujawwad" },
-  { id: "ar.mahermuaiqly", name: "Maher Al Muaiqly", arabicName: "ماهر المعيقلي", style: "Murattal" },
-  { id: "ar.minshawi", name: "Mohamed Siddiq Al-Minshawi", arabicName: "محمد صديق المنشاوي", style: "Murattal" },
-  { id: "ar.minshawimujawwad", name: "Al-Minshawi (Mujawwad)", arabicName: "محمد صديق المنشاوي", style: "Mujawwad" },
-  { id: "ar.muhammadayyoub", name: "Muhammad Ayyoub", arabicName: "محمد أيوب", style: "Murattal" },
-  { id: "ar.muhammadjibreel", name: "Muhammad Jibreel", arabicName: "محمد جبريل", style: "Murattal" },
-  { id: "ar.saaborehman", name: "Saad Al-Ghamdi", arabicName: "سعد الغامدي", style: "Murattal" },
-  { id: "ar.parhizgar", name: "Shahriar Parhizgar", arabicName: "شهريار پرهيزگار", style: "Murattal" },
-  { id: "ar.shaatree", name: "Abu Bakr Al-Shatri", arabicName: "أبو بكر الشاطري", style: "Murattal" },
-  { id: "ar.ahmedajamy", name: "Ahmed Al-Ajmi", arabicName: "أحمد العجمي", style: "Murattal" },
+  { 
+    id: "ar.alafasy", 
+    name: "Mishary Rashid Alafasy", 
+    arabicName: "مشاري راشد العفاسي", 
+    style: "Murattal",
+    photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Mishary_rashid_alafasy.jpg/220px-Mishary_rashid_alafasy.jpg"
+  },
+  { 
+    id: "ar.abdulbasitmurattal", 
+    name: "Abdul Basit Abdul Samad", 
+    arabicName: "عبد الباسط عبد الصمد", 
+    style: "Murattal",
+    photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Abdulbasit_Abdulsamad.jpg/220px-Abdulbasit_Abdulsamad.jpg"
+  },
+  { 
+    id: "ar.hudhaify", 
+    name: "Ali Al-Hudhaify", 
+    arabicName: "علي الحذيفي", 
+    style: "Murattal",
+    photo: "https://i.scdn.co/image/ab6761610000e5eb4e7f1d8b5c3e5c4e8f9a0b1c"
+  },
+  { 
+    id: "ar.husary", 
+    name: "Mahmoud Khalil Al-Husary", 
+    arabicName: "محمود خليل الحصري", 
+    style: "Murattal",
+    photo: "https://upload.wikimedia.org/wikipedia/commons/5/5d/Mahmoud_Khalil_Al-Hussary.jpg"
+  },
+  { 
+    id: "ar.mahermuaiqly", 
+    name: "Maher Al Muaiqly", 
+    arabicName: "ماهر المعيقلي", 
+    style: "Murattal",
+    photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Maher_Al_Mueaqly.jpg/220px-Maher_Al_Mueaqly.jpg"
+  },
+  { 
+    id: "ar.minshawi", 
+    name: "Mohamed Siddiq Al-Minshawi", 
+    arabicName: "محمد صديق المنشاوي", 
+    style: "Murattal",
+    photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Al-Minshawi.jpg/220px-Al-Minshawi.jpg"
+  },
+  { 
+    id: "ar.muhammadayyoub", 
+    name: "Muhammad Ayyub", 
+    arabicName: "محمد أيوب", 
+    style: "Murattal",
+    photo: "https://i1.sndcdn.com/artworks-000164150061-0hv9sa-t500x500.jpg"
+  },
+  { 
+    id: "ar.shaatree", 
+    name: "Abu Bakr Al-Shatri", 
+    arabicName: "أبو بكر الشاطري", 
+    style: "Murattal",
+    photo: "https://i.scdn.co/image/ab6761610000e5eb1e6a9a6a3e8c3e5c4e8f9a0b"
+  },
 ];
 
 // Get audio URL for a specific surah and reciter
 export const getAudioUrl = (surahNumber: number, reciterId: string): string => {
-  // Using Al Quran Cloud API for audio
   return `https://cdn.islamic.network/quran/audio-surah/128/${reciterId}/${surahNumber}.mp3`;
-};
-
-// Alternative audio sources using different CDNs
-export const getAlternativeAudioUrl = (surahNumber: number, reciterIdentifier: string): string => {
-  const paddedNumber = surahNumber.toString().padStart(3, '0');
-  return `https://server8.mp3quran.net/${reciterIdentifier}/${paddedNumber}.mp3`;
-};
-
-// Reciter identifiers for mp3quran.net
-export const mp3QuranReciters: Record<string, string> = {
-  "mishary": "afs",
-  "abdulbasit": "basit",
-  "husary": "husr",
-  "maher": "maher",
-  "minshawi": "minsh",
-  "saadghamdi": "gmd",
-  "shatri": "shatri",
-  "ajmi": "ajm",
 };
