@@ -10,7 +10,6 @@ import {
   SkipForward, 
   Volume2,
   Loader2,
-  ChevronDown
 } from "lucide-react";
 import { surahs, reciters, Reciter } from "@/data/quranData";
 import {
@@ -22,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface Ayah {
   number: number;
@@ -209,8 +209,9 @@ const SurahDetailPage = () => {
           </div>
         </header>
 
-        {/* Reciter Selector */}
-        <div className="px-4 py-3 border-b border-border bg-background">
+        {/* Audio Player at Top */}
+        <div className="border-b border-border bg-card p-4 space-y-4">
+          {/* Reciter Selector with Photo */}
           <Select
             value={selectedReciter.id}
             onValueChange={(value) => {
@@ -227,7 +228,11 @@ const SurahDetailPage = () => {
           >
             <SelectTrigger className="w-full">
               <SelectValue>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={selectedReciter.photo} alt={selectedReciter.name} />
+                    <AvatarFallback>{selectedReciter.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
                   <span>{selectedReciter.name}</span>
                   <span className="text-muted-foreground text-xs">({selectedReciter.style})</span>
                 </div>
@@ -236,14 +241,83 @@ const SurahDetailPage = () => {
             <SelectContent>
               {reciters.map((reciter) => (
                 <SelectItem key={reciter.id} value={reciter.id}>
-                  <div className="flex flex-col">
-                    <span>{reciter.name}</span>
-                    <span className="text-primary font-arabic text-sm">{reciter.arabicName}</span>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={reciter.photo} alt={reciter.name} />
+                      <AvatarFallback>{reciter.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span>{reciter.name}</span>
+                      <span className="text-primary font-arabic text-sm">{reciter.arabicName}</span>
+                    </div>
                   </div>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+
+          {/* Controls */}
+          <div className="flex items-center justify-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePreviousSurah}
+              disabled={parseInt(surahNumber || "1") <= 1}
+            >
+              <SkipBack className="w-5 h-5" />
+            </Button>
+
+            <Button
+              size="lg"
+              className="w-14 h-14 rounded-full"
+              onClick={handlePlayPause}
+              disabled={audioLoading}
+            >
+              {audioLoading ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="w-6 h-6" />
+              ) : (
+                <Play className="w-6 h-6 ml-1" />
+              )}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleNextSurah}
+              disabled={parseInt(surahNumber || "1") >= 114}
+            >
+              <SkipForward className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <Slider
+              value={[currentTime]}
+              max={duration || 100}
+              step={1}
+              onValueChange={handleSeek}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+
+          {/* Volume */}
+          <div className="flex items-center gap-3">
+            <Volume2 className="w-4 h-4 text-muted-foreground" />
+            <Slider
+              value={[volume]}
+              max={1}
+              step={0.1}
+              onValueChange={handleVolumeChange}
+              className="flex-1"
+            />
+          </div>
         </div>
 
         {/* Bismillah */}
@@ -282,72 +356,6 @@ const SurahDetailPage = () => {
             </div>
           )}
         </ScrollArea>
-
-        {/* Audio Player */}
-        <div className="border-t border-border bg-card p-4 space-y-4">
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <Slider
-              value={[currentTime]}
-              max={duration || 100}
-              step={1}
-              onValueChange={handleSeek}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handlePreviousSurah}
-              disabled={parseInt(surahNumber || "1") <= 1}
-            >
-              <SkipBack className="w-5 h-5" />
-            </Button>
-
-            <Button
-              size="lg"
-              className="w-14 h-14 rounded-full"
-              onClick={handlePlayPause}
-              disabled={audioLoading}
-            >
-              {audioLoading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : isPlaying ? (
-                <Pause className="w-6 h-6" />
-              ) : (
-                <Play className="w-6 h-6 ml-1" />
-              )}
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleNextSurah}
-              disabled={parseInt(surahNumber || "1") >= 114}
-            >
-              <SkipForward className="w-5 h-5" />
-            </Button>
-          </div>
-
-          {/* Volume */}
-          <div className="flex items-center gap-3">
-            <Volume2 className="w-4 h-4 text-muted-foreground" />
-            <Slider
-              value={[volume]}
-              max={1}
-              step={0.1}
-              onValueChange={handleVolumeChange}
-              className="flex-1"
-            />
-          </div>
-        </div>
 
         {/* Hidden Audio Element */}
         <audio
